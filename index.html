@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>英语单词拔河大战 🏆</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue: #3B82F6; --blue-light: #93C5FD; --blue-dark: #1D4ED8;
+  --red: #EF4444;  --red-light: #FCA5A5;  --red-dark: #B91C1C;
+  --gold: #F59E0B; --gold-light: #FDE68A;
+  --green: #22C55E;
+  --bg: #0F172A;
+  --surface: #1E293B;
+  --border: rgba(255,255,255,0.08);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Baloo 2', cursive; background: var(--bg); color: #F1F5F9; min-height: 100vh; overflow: hidden; }
+
+/* ══════════════════════════════════════
+   SCREENS
+══════════════════════════════════════ */
+.screen { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 100; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); }
+.screen.hidden { display: none; }
+
+.modal {
+  background: linear-gradient(145deg, #1E293B, #0F172A);
+  border: 1px solid rgba(255,255,255,0.12); border-radius: 24px;
+  padding: 36px 40px; max-width: 520px; width: 92%;
+  box-shadow: 0 25px 80px rgba(0,0,0,0.6);
+}
+.modal-icon { font-size: 3.5rem; text-align: center; margin-bottom: 10px; }
+.modal-title { font-family: 'Fredoka One', cursive; font-size: 1.8rem; text-align: center; color: var(--gold); margin-bottom: 6px; }
+.modal-sub { text-align: center; color: #94A3B8; font-size: 0.9rem; margin-bottom: 24px; line-height: 1.6; }
+
+/* tabs in modal */
+.tab-row { display: flex; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 4px; margin-bottom: 20px; }
+.tab-btn { flex: 1; padding: 8px; border-radius: 9px; border: none; background: transparent; color: #94A3B8; font-family: 'Baloo 2', cursive; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+.tab-btn.active { background: var(--surface); color: #F1F5F9; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* form elements */
+.field-row { display: flex; gap: 10px; margin-bottom: 12px; }
+.field-row.col { flex-direction: column; }
+.field-label { font-size: 0.75rem; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
+.field-input, .field-select, .field-textarea {
+  width: 100%; padding: 10px 14px; border-radius: 10px;
+  background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.1);
+  color: #F1F5F9; font-family: 'Baloo 2', cursive; font-size: 0.9rem; font-weight: 600;
+  outline: none; transition: border-color 0.2s;
+}
+.field-input:focus, .field-select:focus, .field-textarea:focus { border-color: var(--gold); }
+.field-input.blue { border-color: rgba(59,130,246,0.4); }
+.field-input.red  { border-color: rgba(239,68,68,0.4); }
+.field-textarea { resize: vertical; min-height: 110px; font-size: 0.82rem; line-height: 1.6; }
+.field-select option { background: #1E293B; }
+
+.word-format-hint {
+  font-size: 0.75rem; color: #64748B; line-height: 1.6; padding: 10px 12px;
+  background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+.word-format-hint strong { color: var(--gold); }
+.word-count-badge { display: inline-block; background: rgba(34,197,94,0.2); color: var(--green); border-radius: 6px; padding: 2px 8px; font-size: 0.75rem; font-weight: 700; margin-left: 8px; }
+
+.btn { padding: 12px 28px; border-radius: 12px; border: none; font-family: 'Baloo 2', cursive; font-weight: 800; font-size: 1rem; cursor: pointer; transition: all 0.2s; }
+.btn-gold { background: linear-gradient(135deg, var(--gold), #F97316); color: #1a1a2e; box-shadow: 0 4px 20px rgba(245,158,11,0.35); }
+.btn-gold:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(245,158,11,0.5); }
+.btn-ghost { background: rgba(255,255,255,0.07); color: #94A3B8; border: 1px solid var(--border); }
+.btn-ghost:hover { background: rgba(255,255,255,0.12); color: #F1F5F9; }
+.btn-row { display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+
+/* result screen */
+.result-scores { display: flex; align-items: center; justify-content: center; gap: 24px; margin: 18px 0; }
+.rs-item { text-align: center; }
+.rs-num { font-family: 'Fredoka One', cursive; font-size: 3rem; }
+.rs-num.blue { color: var(--blue-light); }
+.rs-num.red  { color: var(--red-light); }
+.rs-label { font-size: 0.8rem; color: #64748B; margin-top: 2px; }
+.rs-sep { font-size: 1.5rem; color: #334155; }
+
+/* ══════════════════════════════════════
+   GAME LAYOUT
+══════════════════════════════════════ */
+#gameWrap { width: 100vw; height: 100vh; display: flex; flex-direction: column; visibility: hidden; }
+
+/* header */
+.hdr {
+  height: 52px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16px;
+  background: rgba(15,23,42,0.95);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+}
+.hdr-title { font-family: 'Fredoka One', cursive; font-size: 1.15rem; color: var(--gold); letter-spacing: 0.04em; }
+.hdr-center { display: flex; align-items: center; gap: 14px; }
+
+/* timer ring */
+.timer-wrap { position: relative; width: 46px; height: 46px; }
+.timer-svg { transform: rotate(-90deg); }
+.timer-track { fill: none; stroke: rgba(255,255,255,0.08); stroke-width: 4; }
+.timer-arc  { fill: none; stroke: var(--gold); stroke-width: 4; stroke-linecap: round; transition: stroke-dashoffset 1s linear, stroke 0.3s; }
+.timer-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka One', cursive; font-size: 1rem; color: #F1F5F9; }
+
+.round-tag { font-size: 0.75rem; font-weight: 700; color: #64748B; background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 8px; }
+.hdr-actions { display: flex; gap: 8px; }
+.hdr-btn { padding: 5px 12px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: #64748B; font-family: 'Baloo 2', cursive; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
+.hdr-btn:hover { color: #F1F5F9; border-color: rgba(255,255,255,0.2); }
+
+/* main area */
+.game-main { flex: 1; display: flex; overflow: hidden; }
+
+/* ── TEAM PANELS ── */
+.team-panel {
+  width: 240px; flex-shrink: 0;
+  display: flex; flex-direction: column; gap: 8px; padding: 10px;
+}
+.team-panel.left  { background: linear-gradient(160deg, rgba(37,99,235,0.12), transparent); border-right: 1px solid var(--border); }
+.team-panel.right { background: linear-gradient(200deg, rgba(185,28,28,0.12), transparent); border-left: 1px solid var(--border); }
+
+.team-hdr {
+  border-radius: 12px; padding: 8px 12px;
+  display: flex; align-items: center; justify-content: space-between;
+  font-weight: 800; font-size: 0.95rem;
+}
+.team-panel.left  .team-hdr { background: rgba(59,130,246,0.18); border: 1.5px solid rgba(59,130,246,0.35); color: var(--blue-light); }
+.team-panel.right .team-hdr { background: rgba(239,68,68,0.18); border: 1.5px solid rgba(239,68,68,0.35); color: var(--red-light); }
+
+.team-score-big { font-family: 'Fredoka One', cursive; font-size: 1.7rem; }
+.team-panel.left  .team-score-big { color: var(--blue-light); }
+.team-panel.right .team-score-big { color: var(--red-light); }
+
+/* question card */
+.q-card {
+  border-radius: 14px; padding: 12px 14px; flex-shrink: 0;
+  background: rgba(255,255,255,0.04); border: 1.5px solid var(--border);
+}
+.q-type-tag { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.5; margin-bottom: 4px; }
+.q-main { font-family: 'Fredoka One', cursive; font-size: 1.55rem; text-align: center; padding: 6px 0; min-height: 44px; }
+.team-panel.left  .q-main { color: #60A5FA; }
+.team-panel.right .q-main { color: #F87171; }
+.q-sub { font-size: 0.72rem; color: #475569; text-align: center; font-style: italic; }
+
+/* keyboard */
+.kb-wrap { flex: 1; display: flex; flex-direction: column; gap: 6px; justify-content: flex-end; }
+.kb-display {
+  padding: 9px 12px; border-radius: 10px;
+  background: rgba(0,0,0,0.35); border: 2px solid rgba(255,255,255,0.1);
+  font-family: 'Fredoka One', cursive; font-size: 1.2rem; text-align: center;
+  min-height: 42px; letter-spacing: 0.08em; transition: all 0.2s; color: #F1F5F9;
+}
+.kb-display.ok   { border-color: #4ADE80; background: rgba(74,222,128,0.15); color: #4ADE80; }
+.kb-display.err  { border-color: #F87171; background: rgba(248,113,113,0.15); animation: shk 0.3s ease; }
+@keyframes shk { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+
+.kb-keys { display: flex; flex-direction: column; gap: 4px; }
+.kb-row  { display: flex; gap: 4px; justify-content: center; }
+.kk {
+  flex: 1; height: 34px; max-width: 38px;
+  border-radius: 7px; border: 1px solid transparent;
+  font-family: 'Baloo 2', cursive; font-size: 0.82rem; font-weight: 700;
+  cursor: pointer; transition: all 0.1s;
+  display: flex; align-items: center; justify-content: center;
+}
+.team-panel.left  .kk { background: rgba(59,130,246,0.15); color: #93C5FD; border-color: rgba(59,130,246,0.2); }
+.team-panel.right .kk { background: rgba(239,68,68,0.15);  color: #FCA5A5; border-color: rgba(239,68,68,0.2);  }
+.team-panel.left  .kk:hover { background: rgba(59,130,246,0.4); color: #fff; }
+.team-panel.right .kk:hover { background: rgba(239,68,68,0.4);  color: #fff; }
+.kk:active { transform: scale(0.9); }
+.kk.sp { max-width: none; flex: 2; font-size: 0.72rem; }
+.kk.del { max-width: none; flex: 1.5; font-size: 0.72rem; }
+
+/* mc grid */
+.mc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; flex: 1; align-content: center; }
+.mc-btn {
+  padding: 10px 6px; border-radius: 10px; border: 1.5px solid transparent;
+  font-family: 'Baloo 2', cursive; font-size: 0.85rem; font-weight: 700;
+  cursor: pointer; line-height: 1.3; transition: all 0.15s; text-align: center;
+  min-height: 52px; display: flex; align-items: center; justify-content: center;
+}
+.team-panel.left  .mc-btn { background: rgba(59,130,246,0.12); color: #93C5FD; border-color: rgba(59,130,246,0.25); }
+.team-panel.right .mc-btn { background: rgba(239,68,68,0.12);  color: #FCA5A5; border-color: rgba(239,68,68,0.25);  }
+.team-panel.left  .mc-btn:hover { background: rgba(59,130,246,0.35); color: #fff; border-color: var(--blue); }
+.team-panel.right .mc-btn:hover { background: rgba(239,68,68,0.35);  color: #fff; border-color: var(--red); }
+.mc-btn.mc-correct { background: rgba(74,222,128,0.25) !important; border-color: #4ADE80 !important; color: #4ADE80 !important; }
+.mc-btn.mc-wrong   { background: rgba(248,113,113,0.25) !important; border-color: #F87171 !important; color: #F87171 !important; }
+.mc-btn:disabled { pointer-events: none; }
+
+/* ── ARENA ── */
+.arena {
+  flex: 1; position: relative; overflow: hidden;
+  background: linear-gradient(180deg, #0B1728 0%, #1a2f4a 42%, #1a3a1a 42%, #0d2010 100%);
+}
+
+/* canvas covers full arena */
+#tugCanvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+/* score bubble */
+.score-bubble {
+  position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 10px; z-index: 6;
+  background: rgba(0,0,0,0.65); backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.15); border-radius: 20px;
+  padding: 5px 20px;
+}
+.sb-a { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: var(--blue-light); }
+.sb-sep { color: #334155; font-size: 1rem; }
+.sb-b { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: var(--red-light); }
+
+/* center word display */
+.word-display {
+  position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+  text-align: center; z-index: 6;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.12); border-radius: 16px;
+  padding: 8px 24px; min-width: 200px; white-space: nowrap;
+}
+.wd-label { font-size: 0.62rem; color: #475569; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.wd-word  { font-family: 'Fredoka One', cursive; font-size: 1.35rem; color: var(--gold); letter-spacing: 0.04em; }
+.wd-meta  { font-size: 0.7rem; color: #475569; margin-top: 1px; }
+
+/* feedback popups */
+.fb-pop {
+  position: absolute; top: 40%; font-family: 'Fredoka One', cursive; font-size: 2rem;
+  padding: 10px 26px; border-radius: 16px; z-index: 20; pointer-events: none;
+  transform: translateY(20px) scale(0); opacity: 0; transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+.fb-pop.left  { left: 10%; }
+.fb-pop.right { right: 10%; transform: translateY(20px) scale(0); }
+.fb-pop.show  { transform: translateY(0) scale(1); opacity: 1; }
+.fb-pop.ok  { background: #4ADE80; color: #14532D; box-shadow: 0 8px 30px rgba(74,222,128,0.5); }
+.fb-pop.bad { background: #F87171; color: #7F1D1D; box-shadow: 0 8px 30px rgba(248,113,113,0.5); }
+
+/* ── TEACHER PANEL (right sidebar, hidden toggle) ── */
+.teacher-toggle {
+  position: fixed; right: 0; top: 50%; transform: translateY(-50%);
+  z-index: 50;
+  writing-mode: vertical-lr; text-orientation: mixed;
+  padding: 12px 8px; border-radius: 10px 0 0 10px;
+  background: rgba(245,158,11,0.2); border: 1px solid rgba(245,158,11,0.4); border-right: none;
+  color: var(--gold); font-size: 0.75rem; font-weight: 700; cursor: pointer;
+  letter-spacing: 0.1em; backdrop-filter: blur(6px);
+  transition: background 0.2s;
+}
+.teacher-toggle:hover { background: rgba(245,158,11,0.35); }
+
+/* ══════════════════════════════════════
+   CONFETTI
+══════════════════════════════════════ */
+.conf { position: fixed; pointer-events: none; z-index: 300; top: -20px; font-size: 1.2rem; animation: conf-fall linear forwards; }
+@keyframes conf-fall { to { top: 110vh; transform: rotate(calc(var(--r)*720deg)) translateX(var(--dx)); opacity: 0; } }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     START SCREEN
+══════════════════════════════════════ -->
+<div class="screen" id="startScreen">
+  <div class="modal">
+    <div class="modal-icon">🏆</div>
+    <div class="modal-title">英语单词拔河大战</div>
+    <div class="modal-sub">两队争先答题，拉动绳子！<br>赢得 <strong style="color:var(--gold)">5分</strong> 即可胜利</div>
+
+    <div class="tab-row">
+      <button class="tab-btn active" onclick="switchTab('setup')">⚙️ 基础设置</button>
+      <button class="tab-btn" onclick="switchTab('words')">📝 专项词库</button>
+    </div>
+
+    <!-- SETUP TAB -->
+    <div class="tab-pane active" id="tab-setup">
+      <div class="field-row">
+        <div style="flex:1">
+          <div class="field-label">🔵 蓝队名称</div>
+          <input class="field-input blue" id="nameA" type="text" value="蓝队" maxlength="8">
+        </div>
+        <div style="flex:1">
+          <div class="field-label">🔴 红队名称</div>
+          <input class="field-input red"  id="nameB" type="text" value="红队" maxlength="8">
+        </div>
+      </div>
+      <div class="field-row">
+        <div style="flex:1">
+          <div class="field-label">题目模式</div>
+          <select class="field-select" id="qMode">
+            <option value="mixed">🔀 混合模式</option>
+            <option value="meaning">👁 看英文选中文</option>
+            <option value="spell">✏️ 看中文拼英文</option>
+          </select>
+        </div>
+        <div style="flex:1">
+          <div class="field-label">每题时间</div>
+          <select class="field-select" id="timerSec">
+            <option value="10">10秒（极速）</option>
+            <option value="15" selected>15秒（标准）</option>
+            <option value="20">20秒（宽松）</option>
+            <option value="30">30秒（慢速）</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div style="flex:1">
+          <div class="field-label">胜利条件</div>
+          <select class="field-select" id="winScore">
+            <option value="3">先得3分</option>
+            <option value="5" selected>先得5分</option>
+            <option value="7">先得7分</option>
+            <option value="10">先得10分</option>
+          </select>
+        </div>
+        <div style="flex:1">
+          <div class="field-label">词库来源</div>
+          <select class="field-select" id="wordSrc">
+            <option value="builtin">内置五年级词库</option>
+            <option value="custom">仅用自定义词库</option>
+            <option value="both">内置 + 自定义</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- WORDS TAB -->
+    <div class="tab-pane" id="tab-words">
+      <div class="word-format-hint">
+        📌 每行一个单词，格式：<strong>英文,中文,词性,提示</strong><br>
+        例：<strong>elephant,大象,n.,动物🐘</strong><br>
+        中文、词性、提示可省略（至少填英文和中文）
+      </div>
+      <textarea class="field-textarea" id="customWords" placeholder="elephant,大象,n.,动物🐘&#10;butterfly,蝴蝶,n.,昆虫🦋&#10;celebrate,庆祝,v.,动词🎉&#10;beautiful,美丽的,adj.,形容词💎&#10;..."></textarea>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+        <span class="field-label" style="margin:0">已输入词汇：<span class="word-count-badge" id="customCount">0</span></span>
+        <button class="btn btn-ghost" style="padding:5px 12px;font-size:0.78rem" onclick="clearCustomWords()">清空</button>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-gold" onclick="startGame()">🎮 开始游戏</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     RESULT SCREEN
+══════════════════════════════════════ -->
+<div class="screen hidden" id="resultScreen">
+  <div class="modal">
+    <div class="modal-icon" id="resEmoji">🎉</div>
+    <div class="modal-title" id="resTitle">—</div>
+    <div class="result-scores">
+      <div class="rs-item"><div class="rs-num blue" id="resScoreA">0</div><div class="rs-label" id="resNameA">蓝队</div></div>
+      <div class="rs-sep">VS</div>
+      <div class="rs-item"><div class="rs-num red" id="resScoreB">0</div><div class="rs-label" id="resNameB">红队</div></div>
+    </div>
+    <div class="modal-sub" id="resMsg"></div>
+    <div class="btn-row">
+      <button class="btn btn-gold" onclick="restartGame()">🔄 再来一局</button>
+      <button class="btn btn-ghost" onclick="backToSetup()">⚙️ 重新设置</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     GAME
+══════════════════════════════════════ -->
+<div id="gameWrap">
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-title">🏆 英语单词拔河大战</div>
+    <div class="hdr-center">
+      <div class="timer-wrap">
+        <svg class="timer-svg" viewBox="0 0 46 46" width="46" height="46">
+          <circle class="timer-track" cx="23" cy="23" r="19"/>
+          <circle class="timer-arc" id="timerArc" cx="23" cy="23" r="19"
+            stroke-dasharray="119.4" stroke-dashoffset="0"/>
+        </svg>
+        <div class="timer-text" id="timerNum">15</div>
+      </div>
+      <div class="round-tag" id="roundTag">第 1 题</div>
+    </div>
+    <div class="hdr-actions">
+      <button class="hdr-btn" onclick="pauseGame()">⏸ 暂停</button>
+      <button class="hdr-btn" onclick="backToSetup()">✕ 退出</button>
+    </div>
+  </div>
+
+  <!-- GAME MAIN -->
+  <div class="game-main">
+
+    <!-- LEFT (BLUE) PANEL -->
+    <div class="team-panel left">
+      <div class="team-hdr">
+        <span id="nameADisp">蓝队</span>
+        <span class="team-score-big" id="scoreADisp">0</span>
+      </div>
+      <div class="q-card">
+        <div class="q-type-tag" id="qtypeA">题目</div>
+        <div class="q-main" id="qmainA">—</div>
+        <div class="q-sub"  id="qsubA"></div>
+      </div>
+      <div class="kb-display" id="kbDispA"></div>
+      <div id="kbAreaA" style="flex:1;display:flex;flex-direction:column;gap:6px;justify-content:flex-end;"></div>
+    </div>
+
+    <!-- ARENA -->
+    <div class="arena" id="arena">
+      <!-- Canvas for tug-of-war animation -->
+      <canvas id="tugCanvas"></canvas>
+
+      <!-- score bubble -->
+      <div class="score-bubble">
+        <span class="sb-a" id="sbA">0</span>
+        <span class="sb-sep">:</span>
+        <span class="sb-b" id="sbB">0</span>
+      </div>
+
+      <!-- word display -->
+      <div class="word-display">
+        <div class="wd-label">当前单词</div>
+        <div class="wd-word" id="wdWord">—</div>
+        <div class="wd-meta" id="wdMeta"></div>
+      </div>
+
+      <!-- feedback -->
+      <div class="fb-pop left"  id="fbA"></div>
+      <div class="fb-pop right" id="fbB"></div>
+    </div>
+
+    <!-- RIGHT (RED) PANEL -->
+    <div class="team-panel right">
+      <div class="team-hdr">
+        <span class="team-score-big" id="scoreBDisp">0</span>
+        <span id="nameBDisp">红队</span>
+      </div>
+      <div class="q-card">
+        <div class="q-type-tag" id="qtypeB">题目</div>
+        <div class="q-main" id="qmainB">—</div>
+        <div class="q-sub"  id="qsubB"></div>
+      </div>
+      <div class="kb-display" id="kbDispB"></div>
+      <div id="kbAreaB" style="flex:1;display:flex;flex-direction:column;gap:6px;justify-content:flex-end;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Teacher toggle -->
+<div class="teacher-toggle" id="teacherToggle" onclick="openTeacherPanel()" style="display:none">👩‍🏫 教师词库</div>
+
+<!-- Teacher panel (reuses startScreen words tab) -->
+
+<script>
+// ════════════════════════════════════════
+// BUILT-IN WORD BANK
+// ════════════════════════════════════════
+const BUILTIN = [
+  {en:"elephant",cn:"大象",pos:"n.",hint:"动物🐘"},
+  {en:"butterfly",cn:"蝴蝶",pos:"n.",hint:"昆虫🦋"},
+  {en:"dolphin",cn:"海豚",pos:"n.",hint:"动物🐬"},
+  {en:"penguin",cn:"企鹅",pos:"n.",hint:"动物🐧"},
+  {en:"giraffe",cn:"长颈鹿",pos:"n.",hint:"动物🦒"},
+  {en:"squirrel",cn:"松鼠",pos:"n.",hint:"动物🐿️"},
+  {en:"strawberry",cn:"草莓",pos:"n.",hint:"水果🍓"},
+  {en:"watermelon",cn:"西瓜",pos:"n.",hint:"水果🍉"},
+  {en:"chocolate",cn:"巧克力",pos:"n.",hint:"食物🍫"},
+  {en:"sandwich",cn:"三明治",pos:"n.",hint:"食物🥪"},
+  {en:"pineapple",cn:"菠萝",pos:"n.",hint:"水果🍍"},
+  {en:"dictionary",cn:"字典",pos:"n.",hint:"文具📚"},
+  {en:"calendar",cn:"日历",pos:"n.",hint:"文具📅"},
+  {en:"scissors",cn:"剪刀",pos:"n.",hint:"文具✂️"},
+  {en:"geography",cn:"地理",pos:"n.",hint:"学科🌍"},
+  {en:"history",cn:"历史",pos:"n.",hint:"学科📜"},
+  {en:"science",cn:"科学",pos:"n.",hint:"学科🔬"},
+  {en:"celebrate",cn:"庆祝",pos:"v.",hint:"动词🎉"},
+  {en:"discover",cn:"发现",pos:"v.",hint:"动词🔍"},
+  {en:"collect",cn:"收集",pos:"v.",hint:"动词🗂️"},
+  {en:"protect",cn:"保护",pos:"v.",hint:"动词🛡️"},
+  {en:"improve",cn:"改善",pos:"v.",hint:"动词📈"},
+  {en:"explain",cn:"解释",pos:"v.",hint:"动词💬"},
+  {en:"beautiful",cn:"美丽的",pos:"adj.",hint:"形容词💎"},
+  {en:"wonderful",cn:"精彩的",pos:"adj.",hint:"形容词✨"},
+  {en:"dangerous",cn:"危险的",pos:"adj.",hint:"形容词⚠️"},
+  {en:"excellent",cn:"优秀的",pos:"adj.",hint:"形容词🌟"},
+  {en:"nervous",cn:"紧张的",pos:"adj.",hint:"形容词😬"},
+  {en:"delicious",cn:"美味的",pos:"adj.",hint:"形容词😋"},
+  {en:"mountain",cn:"山",pos:"n.",hint:"自然⛰️"},
+  {en:"ocean",cn:"海洋",pos:"n.",hint:"自然🌊"},
+  {en:"island",cn:"岛屿",pos:"n.",hint:"地点🏝️"},
+  {en:"weather",cn:"天气",pos:"n.",hint:"自然🌤️"},
+  {en:"rainbow",cn:"彩虹",pos:"n.",hint:"自然🌈"},
+  {en:"thunder",cn:"雷声",pos:"n.",hint:"自然⛈️"},
+  {en:"together",cn:"一起",pos:"adv.",hint:"副词🤝"},
+  {en:"practice",cn:"练习",pos:"v.",hint:"动词📖"},
+  {en:"remember",cn:"记住",pos:"v.",hint:"动词🧠"},
+  {en:"language",cn:"语言",pos:"n.",hint:"名词🗣️"},
+  {en:"question",cn:"问题",pos:"n.",hint:"名词❓"},
+];
+
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+let G = {
+  scoreA:0, scoreB:0, ropeOffset:0,
+  word:null, usedEn:[],
+  qType:'mixed', timerMax:15, winScore:5,
+  timerLeft:0, timerHandle:null,
+  inputA:'', inputB:'',
+  answered:false, blocked:{A:false,B:false},
+  round:1, paused:false,
+  wordPool:[],
+  nameA:'蓝队', nameB:'红队',
+};
+
+// ════════════════════════════════════════
+// TAB SWITCH (start modal)
+// ════════════════════════════════════════
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active', (i===0&&tab==='setup')||(i===1&&tab==='words')));
+  document.getElementById('tab-setup').classList.toggle('active', tab==='setup');
+  document.getElementById('tab-words').classList.toggle('active', tab==='words');
+}
+
+// live count custom words
+document.getElementById('customWords').addEventListener('input', updateCustomCount);
+function updateCustomCount() {
+  const lines = document.getElementById('customWords').value.trim().split('\n').filter(l=>l.trim()&&l.includes(','));
+  document.getElementById('customCount').textContent = lines.length;
+}
+function clearCustomWords() { document.getElementById('customWords').value=''; updateCustomCount(); }
+
+// parse custom words
+function parseCustomWords() {
+  return document.getElementById('customWords').value.trim().split('\n')
+    .map(l=>l.trim()).filter(Boolean)
+    .map(l=>{
+      const [en,cn,pos,hint] = l.split(',').map(s=>s.trim());
+      if (!en||!cn) return null;
+      return { en: en.toLowerCase(), cn, pos:pos||'', hint:hint||'' };
+    }).filter(Boolean);
+}
+
+// ════════════════════════════════════════
+// CANVAS TUG-OF-WAR RENDERER
+// ════════════════════════════════════════
+let animFrame = null;
+let animTick = 0;
+let canvasTargetOffset = 0;  // target rope offset (-5..+5)
+let canvasCurrentOffset = 0; // smoothed current
+
+function initCanvas() {
+  const cv = document.getElementById('tugCanvas');
+  const arena = document.getElementById('arena');
+  cv.width = arena.clientWidth;
+  cv.height = arena.clientHeight;
+}
+
+function drawRope() {
+  canvasTargetOffset = G.ropeOffset;
+}
+
+function updateChars() {
+  canvasTargetOffset = G.ropeOffset;
+}
+
+function buildStars() {} // no-op, canvas handles it
+
+// ── Draw a tug-of-war stick figure ───────────────────────────────────
+// cx,cy  = foot position on ground
+// facing = +1 means person faces RIGHT (blue team, pulling rope to their right)
+//          -1 means person faces LEFT  (red team)
+// phase  = animation clock for leg/body bob
+// color  = body color
+// shadow = true draws dark silhouette for drop-shadow pass
+//
+// POSE: body leans AWAY from rope (~40°), both arms reach TOWARD rope,
+//       legs push back hard — classic tug-of-war posture
+function drawPerson(ctx, cx, cy, facing, phase, color, shadow) {
+  const S = 1.15; // scale factor — slightly bigger figures
+
+  // anatomy sizes (all in px)
+  const HEAD_R = 12 * S;
+  const TORSO  = 32 * S;   // hip → shoulder length
+  const UPPER_ARM = 18 * S;
+  const FORE_ARM  = 16 * S;
+  const UPPER_LEG = 22 * S;
+  const LOWER_LEG = 20 * S;
+  const FOOT      = 10 * S;
+
+  // body-lean angle away from rope: 35° base + 5° breathing bob
+  const leanBob = 4 * Math.sin(phase * Math.PI * 2);
+  const leanAng = (35 + leanBob) * Math.PI / 180;  // radians
+
+  // leg stride animation
+  const stride = 12 * Math.sin(phase * Math.PI * 2);
+
+  ctx.save();
+  ctx.translate(cx, cy);  // origin = foot level
+
+  // ── SHADOW (ellipse on ground) ────────────────────────────────────
+  if (shadow) {
+    ctx.beginPath();
+    ctx.ellipse(facing * 8, 0, 20, 5, 0, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.fill();
+    ctx.restore();
+    return { handX: cx + facing * HEAD_R * 2, handY: cy - TORSO * 0.6 };
+  }
+
+  // ── Helper: draw a limb segment ──────────────────────────────────
+  function limb(x1,y1,x2,y2,w) {
+    ctx.lineWidth = w;
+    ctx.beginPath();
+    ctx.moveTo(x1,y1);
+    ctx.lineTo(x2,y2);
+    ctx.stroke();
+  }
+  function circle(x,y,r,fill) {
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+    if(fill) ctx.fill(); else ctx.stroke();
+  }
+
+  // ── KEY JOINT POSITIONS ───────────────────────────────────────────
+  // Hip is at origin (0,0). Body leans away from rope.
+  // facing=+1 (blue, left side) → rope is to their RIGHT → lean LEFT (negative x)
+  // facing=-1 (red, right side) → rope is to their LEFT  → lean RIGHT (positive x)
+  const leanDir = -facing;  // direction of lean (away from rope)
+
+  // Hip → Shoulder: lean torso
+  const hipX = 0, hipY = -UPPER_LEG * 0.8;  // hip floats above ground
+  const shoulderX = hipX + leanDir * Math.sin(leanAng) * TORSO;
+  const shoulderY = hipY - Math.cos(leanAng) * TORSO;
+
+  // Head: on top of shoulder, same lean direction
+  const headX = shoulderX + leanDir * Math.sin(leanAng) * HEAD_R * 0.6;
+  const headY = shoulderY - HEAD_R * 1.1;
+
+  // ARMS: both reach TOWARD rope (opposite of lean)
+  // Upper arm starts at shoulder, angles toward rope
+  const armDirX = facing;  // toward rope
+  const armBaseAng = -25 * Math.PI/180;  // slightly downward
+  const armBob = 8 * Math.sin(phase * Math.PI * 2 + Math.PI);
+  const elbowX = shoulderX + armDirX * Math.cos(armBaseAng + armBob*Math.PI/180) * UPPER_ARM;
+  const elbowY = shoulderY + Math.sin(armBaseAng + armBob*Math.PI/180) * UPPER_ARM;
+  const handX  = elbowX  + armDirX * FORE_ARM * 0.9;
+  const handY  = elbowY  - 2;
+
+  // LEGS: two legs with stride animation
+  // Back leg (pushing hard)
+  const backLegAng  = (60 + stride) * Math.PI/180;
+  const frontLegAng = (80 - stride) * Math.PI/180;
+
+  // Back leg goes backward (away from rope direction)
+  const knee1X = hipX + leanDir * Math.cos(backLegAng) * UPPER_LEG * 0.5 - facing * Math.sin(backLegAng) * UPPER_LEG;
+  const knee1Y = hipY + Math.cos(backLegAng) * UPPER_LEG;
+  const foot1X = knee1X + leanDir * 2 - facing * 4;
+  const foot1Y = -2;
+
+  // Front leg (slightly bent, weight-bearing)
+  const knee2X = hipX + facing * Math.sin(frontLegAng) * UPPER_LEG * 0.3;
+  const knee2Y = hipY + Math.cos(frontLegAng) * UPPER_LEG;
+  const foot2X = knee2X + facing * 6;
+  const foot2Y = -2;
+
+  // ── DRAW ─────────────────────────────────────────────────────────
+  ctx.lineCap  = 'round';
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = color;
+  ctx.fillStyle   = color;
+
+  // legs (draw first, behind torso)
+  limb(hipX, hipY, knee1X, knee1Y, 5*S);
+  limb(knee1X, knee1Y, foot1X, foot1Y, 4*S);
+  // foot
+  limb(foot1X, foot1Y, foot1X + leanDir*FOOT*0.6, foot1Y, 4*S);
+
+  limb(hipX, hipY, knee2X, knee2Y, 5*S);
+  limb(knee2X, knee2Y, foot2X, foot2Y, 4*S);
+  limb(foot2X, foot2Y, foot2X + leanDir*FOOT*0.4, foot2Y, 4*S);
+
+  // torso
+  limb(hipX, hipY, shoulderX, shoulderY, 6*S);
+
+  // arms
+  limb(shoulderX, shoulderY, elbowX, elbowY, 5*S);
+  limb(elbowX, elbowY, handX, handY, 4*S);
+
+  // head
+  ctx.beginPath(); ctx.arc(headX, headY, HEAD_R, 0, Math.PI*2);
+  ctx.fill();
+
+  // helmet/hair band (team color accent)
+  ctx.save();
+  ctx.fillStyle = facing === 1 ? '#1e40af' : '#7f1d1d';
+  ctx.beginPath();
+  ctx.arc(headX, headY, HEAD_R, Math.PI, Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+
+  // face: eye toward rope side
+  ctx.fillStyle = '#fff';
+  const eyeX = headX + facing * HEAD_R * 0.35;
+  const eyeY = headY - 1;
+  circle(eyeX, eyeY, 2.8*S, true);
+  ctx.fillStyle = '#0f172a';
+  circle(eyeX + facing * 1, eyeY, 1.4*S, true);
+
+  // mouth (effort expression: open O or grimace)
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(headX + facing*2, headY + HEAD_R*0.3, 3, 0, Math.PI);
+  ctx.stroke();
+
+  // sweat drop (effort detail)
+  ctx.fillStyle = 'rgba(147,197,253,0.8)';
+  ctx.beginPath();
+  ctx.arc(headX + leanDir * HEAD_R * 0.8, headY - HEAD_R*0.4, 2, 0, Math.PI*2);
+  ctx.fill();
+
+  ctx.restore();
+
+  // return hand world position (for rope attachment)
+  return { handX: cx + handX, handY: cy + handY };
+}
+
+// ── Main canvas render loop ───────────────────────────────────────────
+function renderCanvas() {
+  animFrame = requestAnimationFrame(renderCanvas);
+  animTick += 0.04;
+
+  const cv = document.getElementById('tugCanvas');
+  const arena = document.getElementById('arena');
+  if (cv.width !== arena.clientWidth || cv.height !== arena.clientHeight) {
+    cv.width = arena.clientWidth;
+    cv.height = arena.clientHeight;
+  }
+  const W = cv.width, H = cv.height;
+  const ctx = cv.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+
+  // smooth offset
+  canvasCurrentOffset += (canvasTargetOffset - canvasCurrentOffset) * 0.08;
+
+  // ── SKY ──────────────────────────────────────────────────────────
+  const skyH = H * 0.50;
+  const skyGrad = ctx.createLinearGradient(0, 0, 0, skyH);
+  skyGrad.addColorStop(0, '#06112a');
+  skyGrad.addColorStop(1, '#0d2a4a');
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, W, skyH);
+
+  // stars (static seed)
+  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  for (let i=0; i<40; i++) {
+    const sx = ((i * 137.5) % W);
+    const sy = ((i * 97.3) % skyH);
+    const sr = 0.5 + (i%3)*0.5;
+    const twinkle = 0.4 + 0.6 * Math.abs(Math.sin(animTick * 0.5 + i));
+    ctx.globalAlpha = twinkle;
+    ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  // moon
+  ctx.save();
+  ctx.fillStyle = '#FDE68A';
+  ctx.shadowColor = '#F59E0B'; ctx.shadowBlur = 20;
+  ctx.beginPath(); ctx.arc(W*0.85, H*0.1, 18, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#0d2a4a';
+  ctx.beginPath(); ctx.arc(W*0.85+8, H*0.1-3, 16, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+
+  // ── GROUND ────────────────────────────────────────────────────────
+  const groundY = skyH;
+  const gGrad = ctx.createLinearGradient(0, groundY, 0, H);
+  gGrad.addColorStop(0, '#1a3a0d');
+  gGrad.addColorStop(1, '#0a1f06');
+  ctx.fillStyle = gGrad;
+  ctx.fillRect(0, groundY, W, H - groundY);
+
+  // grass line glow
+  ctx.save();
+  ctx.shadowColor = '#4ADE80'; ctx.shadowBlur = 12;
+  ctx.fillStyle = '#4ADE80';
+  ctx.fillRect(0, groundY - 3, W, 4);
+  ctx.restore();
+
+  // grass blades
+  ctx.strokeStyle = '#22C55E';
+  ctx.lineWidth = 1.5;
+  for (let i=0; i<W; i+=12) {
+    const sway = 3 * Math.sin(animTick + i * 0.05);
+    ctx.beginPath();
+    ctx.moveTo(i, groundY);
+    ctx.quadraticCurveTo(i + sway, groundY - 8, i + sway * 1.5, groundY - 14);
+    ctx.stroke();
+  }
+
+  // ── CENTER LINE & FLAG ────────────────────────────────────────────
+  const midX = W / 2;
+  // dashed center line
+  ctx.save();
+  ctx.setLineDash([8, 6]);
+  ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(midX, 0); ctx.lineTo(midX, groundY); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+  // flag
+  ctx.save();
+  ctx.fillStyle = '#F59E0B';
+  ctx.shadowColor = '#F59E0B'; ctx.shadowBlur = 8;
+  // pole
+  ctx.strokeStyle = '#CBD5E1'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(midX, groundY - 10); ctx.lineTo(midX, groundY - 60); ctx.stroke();
+  // flag triangle
+  ctx.beginPath();
+  ctx.moveTo(midX, groundY - 60);
+  ctx.lineTo(midX + 22, groundY - 52);
+  ctx.lineTo(midX, groundY - 44);
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+
+  // ── FIGURES & ROPE ────────────────────────────────────────────────
+  const ropeShift = canvasCurrentOffset * (W * 0.055);
+  const groundBaseY = groundY - 4;   // foot level
+
+  const figSpacing = 46;
+  const teamCount  = 3;
+
+  // Blue team base: left of center, shifts left when A winning
+  const aBaseX = midX - 120 + ropeShift;
+  // Red team base: right of center
+  const bBaseX = midX + 120 + ropeShift;
+
+  let ropeLeftX, ropeLeftY, ropeRightX, ropeRightY;
+
+  // ── ground shadows first ──
+  for (let i=0; i<teamCount; i++) {
+    drawPerson(ctx, aBaseX - i*figSpacing, groundBaseY,  1, animTick+i*0.7, '#3B82F6', true);
+    drawPerson(ctx, bBaseX + i*figSpacing, groundBaseY, -1, animTick+i*0.7+0.4, '#EF4444', true);
+  }
+
+  // ── blue team (facing +1 = right, rope to their right) ──
+  for (let i=teamCount-1; i>=0; i--) {
+    const h = drawPerson(ctx, aBaseX - i*figSpacing, groundBaseY, 1, animTick+i*0.7, '#60A5FA', false);
+    if (i===0) { ropeLeftX=h.handX; ropeLeftY=h.handY; }
+  }
+
+  // ── red team (facing -1 = left, rope to their left) ──
+  for (let i=teamCount-1; i>=0; i--) {
+    const h = drawPerson(ctx, bBaseX + i*figSpacing, groundBaseY, -1, animTick+i*0.7+0.4, '#F87171', false);
+    if (i===0) { ropeRightX=h.handX; ropeRightY=h.handY; }
+  }
+
+  // ── ROPE ─────────────────────────────────────────────────────────
+  const ropeMidX = (ropeLeftX + ropeRightX) / 2;
+  const tensionSag = 8 + Math.abs(canvasCurrentOffset) * 1.5;
+  const ropeMidY = Math.max(ropeLeftY, ropeRightY) + tensionSag;
+
+  // rope pattern: alternating thick segments
+  const ropeSegs = 20;
+  const t_vals = Array.from({length: ropeSegs+1}, (_,i) => i/ropeSegs);
+  const ropePoints = t_vals.map(t => {
+    // quadratic bezier
+    const mt = 1-t;
+    return {
+      x: mt*mt*ropeLeftX + 2*mt*t*ropeMidX + t*t*ropeRightX,
+      y: mt*mt*ropeLeftY + 2*mt*t*ropeMidY + t*t*ropeRightY,
+    };
+  });
+
+  // draw rope glow
+  ctx.save();
+  ctx.shadowColor = 'rgba(139,92,11,0.6)'; ctx.shadowBlur = 8;
+  ctx.lineWidth = 14; ctx.strokeStyle = '#78350F';
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(ropePoints[0].x, ropePoints[0].y);
+  for (let i=1; i<ropePoints.length; i++) ctx.lineTo(ropePoints[i].x, ropePoints[i].y);
+  ctx.stroke();
+  ctx.restore();
+
+  // draw rope strands (alternating color)
+  for (let i=0; i<ropeSegs; i++) {
+    const col = i%2===0 ? '#92400E' : '#A16207';
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 10;
+    ctx.lineCap = 'butt';
+    ctx.beginPath();
+    ctx.moveTo(ropePoints[i].x, ropePoints[i].y);
+    ctx.lineTo(ropePoints[i+1].x, ropePoints[i+1].y);
+    ctx.stroke();
+  }
+  // rope highlight
+  ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+  ctx.lineWidth = 3; ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(ropePoints[0].x, ropePoints[0].y - 2);
+  for (let i=1; i<ropePoints.length; i++) ctx.lineTo(ropePoints[i].x, ropePoints[i].y - 2);
+  ctx.stroke();
+
+  // ── TEAM NAME TAGS ────────────────────────────────────────────────
+  const tagY = groundBaseY + 22;
+  ctx.font = 'bold 13px "Baloo 2", sans-serif';
+  ctx.textAlign = 'center';
+  const aTagX = aBaseX - (teamCount-1)*figSpacing;
+  const bTagX = bBaseX + (teamCount-1)*figSpacing;
+  ctx.fillStyle = 'rgba(29,78,216,0.85)';
+  ctx.beginPath(); ctx.roundRect(aTagX-36, tagY-16, 72, 22, 5); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.fillText(G.nameA||'蓝队', aTagX, tagY);
+  ctx.fillStyle = 'rgba(185,28,28,0.85)';
+  ctx.beginPath(); ctx.roundRect(bTagX-36, tagY-16, 72, 22, 5); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.fillText(G.nameB||'红队', bTagX, tagY);
+
+  // ── WIN SIDE INDICATOR ────────────────────────────────────────────
+  if (Math.abs(canvasCurrentOffset) > 0.5) {
+    const isAWin = canvasCurrentOffset < 0;
+    const arrowX = isAWin ? W*0.2 : W*0.8;
+    ctx.save();
+    ctx.font = 'bold 18px Fredoka One';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = isAWin ? '#60A5FA' : '#F87171';
+    ctx.globalAlpha = 0.6 + 0.4*Math.abs(Math.sin(animTick*2));
+    const arrows = isAWin ? '◀◀◀' : '▶▶▶';
+    ctx.fillText(arrows, arrowX, groundY * 0.55);
+    ctx.restore();
+  }
+}
+
+function startCanvasLoop() {
+  if (animFrame) cancelAnimationFrame(animFrame);
+  initCanvas();
+  renderCanvas();
+}
+function stopCanvasLoop() {
+  if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
+}
+
+// ════════════════════════════════════════
+// KEYBOARD BUILDERS
+// ════════════════════════════════════════
+const ROWS=[['q','w','e','r','t','y','u','i','o','p'],['a','s','d','f','g','h','j','k','l'],['z','x','c','v','b','n','m']];
+
+function buildSpellKB(areaId, team) {
+  const el = document.getElementById(areaId);
+  el.innerHTML='';
+  const wrap = document.createElement('div'); wrap.className='kb-keys';
+  ROWS.forEach((row,ri)=>{
+    const rowEl = document.createElement('div'); rowEl.className='kb-row';
+    row.forEach(k=>{
+      const b=document.createElement('button'); b.className='kk';
+      b.textContent=k; b.onclick=()=>spellKey(team,k); rowEl.appendChild(b);
+    });
+    if(ri===2){
+      const del=document.createElement('button'); del.className='kk del'; del.textContent='⌫ 删';
+      del.onclick=()=>spellKey(team,'⌫'); rowEl.appendChild(del);
+      const ok=document.createElement('button'); ok.className='kk sp'; ok.textContent='✓ 确认';
+      ok.onclick=()=>spellSubmit(team); rowEl.appendChild(ok);
+    }
+    wrap.appendChild(rowEl);
+  });
+  el.appendChild(wrap);
+}
+
+function buildMCKB(areaId, word, team) {
+  const others = G.wordPool.filter(w=>w.en!==word.en);
+  const choices = [word, ...others.sort(()=>Math.random()-0.5).slice(0,3)].sort(()=>Math.random()-0.5);
+  const el = document.getElementById(areaId);
+  el.innerHTML='';
+  const grid=document.createElement('div'); grid.className='mc-grid';
+  choices.forEach(c=>{
+    const b=document.createElement('button'); b.className='mc-btn';
+    b.textContent=c.cn;
+    b.onclick=()=>mcAnswer(team, c.en===word.en, b, grid);
+    grid.appendChild(b);
+  });
+  el.appendChild(grid);
+}
+
+// ════════════════════════════════════════
+// QUESTION SETUP
+// ════════════════════════════════════════
+function pickQType() {
+  if(G.qType==='mixed') return Math.random()<0.5?'meaning':'spell';
+  return G.qType;
+}
+
+function nextQuestion() {
+  clearTimer();
+  G.answered=false; G.inputA=''; G.inputB=''; G.blocked={A:false,B:false};
+
+  // pick word
+  let pool = G.wordPool.filter(w=>!G.usedEn.includes(w.en));
+  if(!pool.length){ G.usedEn=[]; pool=G.wordPool; }
+  G.word = pool[Math.floor(Math.random()*pool.length)];
+  G.usedEn.push(G.word.en);
+
+  const qt = pickQType();
+  G.curQType = qt;
+
+  // center display
+  document.getElementById('wdWord').textContent = qt==='meaning' ? G.word.en : G.word.cn;
+  document.getElementById('wdMeta').textContent  = qt==='meaning' ? `${G.word.pos} ${G.word.hint}` : '请拼写英文单词';
+  document.getElementById('roundTag').textContent = `第 ${G.round} 题`;
+
+  // panels
+  ['A','B'].forEach(t=>{
+    if(qt==='meaning'){
+      document.getElementById('qtype'+t).textContent='看英文→选中文';
+      document.getElementById('qmain'+t).textContent=G.word.en;
+      document.getElementById('qsub'+t).textContent=G.word.hint;
+      document.getElementById('kbDisp'+t).textContent='选择正确的中文意思 👇';
+      document.getElementById('kbDisp'+t).className='kb-display';
+      buildMCKB('kbArea'+t, G.word, t);
+    } else {
+      document.getElementById('qtype'+t).textContent='看中文→拼英文';
+      document.getElementById('qmain'+t).textContent=G.word.cn;
+      document.getElementById('qsub'+t).textContent=`提示: ${G.word.hint}`;
+      document.getElementById('kbDisp'+t).textContent='';
+      document.getElementById('kbDisp'+t).className='kb-display';
+      buildSpellKB('kbArea'+t, t);
+    }
+  });
+
+  startTimer();
+}
+
+// ════════════════════════════════════════
+// ANSWER HANDLERS
+// ════════════════════════════════════════
+function mcAnswer(team, correct, btn, grid) {
+  if(G.blocked[team]||G.answered) return;
+  G.blocked[team]=true;
+  const disp=document.getElementById('kbDisp'+team);
+  // highlight
+  Array.from(grid.children).forEach(b=>{
+    b.disabled=true;
+    if(b===btn) b.className='mc-btn '+(correct?'mc-correct':'mc-wrong');
+  });
+  if(!correct) {
+    // show correct answer green
+    Array.from(grid.children).forEach(b=>{ if(b.textContent===G.word.cn) b.className='mc-btn mc-correct'; });
+    disp.textContent='❌ 答错了'; disp.className='kb-display err';
+    onWrong(team);
+  } else {
+    disp.textContent='✅ 正确！'; disp.className='kb-display ok';
+    onCorrect(team);
+  }
+}
+
+function spellKey(team, key) {
+  if(G.blocked[team]||G.answered||G.curQType!=='spell') return;
+  if(key==='⌫') G['input'+team]=G['input'+team].slice(0,-1);
+  else if(G['input'+team].length<14) G['input'+team]+=key;
+  document.getElementById('kbDisp'+team).textContent=G['input'+team];
+  document.getElementById('kbDisp'+team).className='kb-display';
+}
+function spellSubmit(team) {
+  if(G.blocked[team]||G.answered) return;
+  G.blocked[team]=true;
+  const input=G['input'+team].toLowerCase().trim();
+  const disp=document.getElementById('kbDisp'+team);
+  if(input===G.word.en.toLowerCase()){
+    disp.textContent='✅ '+input; disp.className='kb-display ok';
+    onCorrect(team);
+  } else {
+    disp.textContent='❌ '+(input||'(空)'); disp.className='kb-display err';
+    setTimeout(()=>{ disp.textContent='正确: '+G.word.en; disp.style.fontSize='0.9rem'; },600);
+    onWrong(team);
+  }
+}
+
+// ════════════════════════════════════════
+// SCORING & ROPE
+// ════════════════════════════════════════
+function onCorrect(team) {
+  if(G.answered) return;
+  G.answered=true; clearTimer();
+  if(team==='A'){ G.scoreA++; G.ropeOffset=Math.max(-5,G.ropeOffset-1); }
+  else           { G.scoreB++; G.ropeOffset=Math.min(5, G.ropeOffset+1); }
+  updateScoreUI(); drawRope(); updateChars();
+  showFb(team, true);
+  if(checkWin()) return;
+  setTimeout(()=>{ G.round++; nextQuestion(); }, 1600);
+}
+function onWrong(team) { showFb(team, false); }
+function onTimeout() {
+  if(G.answered) return;
+  G.answered=true;
+  showFb('A',false); showFb('B',false);
+  setTimeout(()=>{ G.round++; nextQuestion(); }, 1500);
+}
+
+function updateScoreUI() {
+  ['A','B'].forEach(t=>{
+    document.getElementById('score'+t+'Disp').textContent=G['score'+t];
+    document.getElementById('sb'+t).textContent=G['score'+t];
+  });
+}
+
+// ════════════════════════════════════════
+// FEEDBACK POPUP
+// ════════════════════════════════════════
+function showFb(team, ok) {
+  const el=document.getElementById('fb'+team);
+  el.textContent=ok?'🎉 拉！':(team==='A'?'💨 答错':'💨 答错');
+  el.className='fb-pop '+(team==='A'?'left':'right')+' '+(ok?'ok':'bad')+' show';
+  setTimeout(()=>{ el.className=el.className.replace(' show',''); },1200);
+}
+
+// ════════════════════════════════════════
+// TIMER
+// ════════════════════════════════════════
+const ARC=119.4;
+function startTimer() {
+  G.timerLeft=G.timerMax; updateTimerUI();
+  G.timerHandle=setInterval(()=>{
+    G.timerLeft--;
+    updateTimerUI();
+    if(G.timerLeft<=0){ clearTimer(); onTimeout(); }
+  },1000);
+}
+function clearTimer() { clearInterval(G.timerHandle); G.timerHandle=null; }
+function updateTimerUI() {
+  const pct=G.timerLeft/G.timerMax;
+  const offset=ARC*(1-pct);
+  const arc=document.getElementById('timerArc');
+  arc.style.strokeDashoffset=offset;
+  arc.style.stroke = pct>0.5?'#F59E0B':pct>0.25?'#F97316':'#EF4444';
+  document.getElementById('timerNum').textContent=G.timerLeft;
+}
+
+// ════════════════════════════════════════
+// WIN CHECK
+// ════════════════════════════════════════
+function checkWin() {
+  if(G.scoreA>=G.winScore||G.scoreB>=G.winScore){
+    clearTimer();
+    const aWin=G.scoreA>=G.winScore;
+    setTimeout(()=>showResult(aWin),900);
+    return true;
+  }
+  return false;
+}
+function showResult(aWin) {
+  confettiBurst();
+  const wName=aWin?G.nameA:G.nameB;
+  document.getElementById('resEmoji').textContent='🏆';
+  document.getElementById('resTitle').innerHTML=`<span style="color:${aWin?'#93C5FD':'#FCA5A5'}">${wName}</span> 赢得比赛！`;
+  document.getElementById('resScoreA').textContent=G.scoreA;
+  document.getElementById('resScoreB').textContent=G.scoreB;
+  document.getElementById('resNameA').textContent=G.nameA;
+  document.getElementById('resNameB').textContent=G.nameB;
+  const msgs=aWin
+    ?[`${wName}单词掌握超棒！`,`${wName}把对手拉过中线了！`,`${wName}英语词汇量真厉害！`]
+    :[`${wName}后来居上逆转！`,`${wName}绝地反击获得胜利！`,`${wName}的单词记忆非常扎实！`];
+  document.getElementById('resMsg').textContent=msgs[Math.floor(Math.random()*msgs.length)];
+  document.getElementById('resultScreen').classList.remove('hidden');
+}
+
+// ════════════════════════════════════════
+// GAME CONTROL
+// ════════════════════════════════════════
+function buildWordPool() {
+  const src=document.getElementById('wordSrc').value;
+  const custom=parseCustomWords();
+  if(src==='builtin') return [...BUILTIN];
+  if(src==='custom')  return custom.length?custom:[...BUILTIN];
+  return [...BUILTIN, ...custom];
+}
+
+function startGame() {
+  G.nameA=document.getElementById('nameA').value||'蓝队';
+  G.nameB=document.getElementById('nameB').value||'红队';
+  G.qType=document.getElementById('qMode').value;
+  G.timerMax=parseInt(document.getElementById('timerSec').value);
+  G.winScore=parseInt(document.getElementById('winScore').value);
+  G.wordPool=buildWordPool();
+  G.scoreA=G.scoreB=0; G.ropeOffset=0; G.usedEn=[]; G.round=1;
+
+  document.getElementById('nameADisp').textContent=G.nameA;
+  document.getElementById('nameBDisp').textContent=G.nameB;
+  document.getElementById('startScreen').classList.add('hidden');
+  document.getElementById('gameWrap').style.visibility='visible';
+  document.getElementById('teacherToggle').style.display='flex';
+
+  startCanvasLoop();
+  updateScoreUI();
+  nextQuestion();
+}
+
+function restartGame() {
+  G.scoreA=G.scoreB=0; G.ropeOffset=0; G.usedEn=[]; G.round=1;
+  G.wordPool=buildWordPool();
+  canvasTargetOffset=0; canvasCurrentOffset=0;
+  document.getElementById('resultScreen').classList.add('hidden');
+  updateScoreUI();
+  nextQuestion();
+}
+function backToSetup() {
+  clearTimer();
+  stopCanvasLoop();
+  document.getElementById('resultScreen').classList.add('hidden');
+  document.getElementById('gameWrap').style.visibility='hidden';
+  document.getElementById('startScreen').classList.remove('hidden');
+  document.getElementById('teacherToggle').style.display='none';
+}
+
+let paused=false;
+function pauseGame() {
+  paused=!paused;
+  if(paused){ clearTimer(); }
+  else{ startTimer(); }
+  document.querySelector('.hdr-btn').textContent=paused?'▶ 继续':'⏸ 暂停';
+}
+
+function openTeacherPanel() {
+  // show start screen words tab for live editing
+  document.getElementById('gameWrap').style.visibility='hidden';
+  document.getElementById('startScreen').classList.remove('hidden');
+  switchTab('words');
+  // add a "back to game" button dynamically
+  if(!document.getElementById('backToGameBtn')){
+    const btn=document.createElement('button');
+    btn.id='backToGameBtn'; btn.className='btn btn-ghost';
+    btn.textContent='← 返回游戏'; btn.style.marginTop='8px';
+    btn.onclick=()=>{
+      G.wordPool=buildWordPool();
+      document.getElementById('startScreen').classList.add('hidden');
+      document.getElementById('gameWrap').style.visibility='visible';
+    };
+    document.querySelector('.btn-row').prepend(btn);
+  }
+}
+
+// ════════════════════════════════════════
+// CONFETTI
+// ════════════════════════════════════════
+const CONF_CHARS=['🎉','⭐','🌟','✨','🎊','🏆','💫','🎈'];
+function confettiBurst(){
+  for(let i=0;i<50;i++){
+    setTimeout(()=>{
+      const el=document.createElement('div'); el.className='conf';
+      el.textContent=CONF_CHARS[Math.floor(Math.random()*CONF_CHARS.length)];
+      el.style.cssText=`left:${Math.random()*100}vw;animation-duration:${1.8+Math.random()*2}s;--r:${Math.random()};--dx:${(Math.random()-.5)*180}px;animation-delay:${Math.random()*0.6}s;font-size:${1+Math.random()*1.2}rem`;
+      document.body.appendChild(el);
+      setTimeout(()=>el.remove(),4000);
+    },i*40);
+  }
+}
+
+window.addEventListener('resize', ()=>{ if(animFrame) initCanvas(); });
+</script>
+</body>
+</html>
